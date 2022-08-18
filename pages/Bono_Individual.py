@@ -239,67 +239,127 @@ with c11:
     
 if btn_val:
     
-    try:
+    results = list(
+        map(
+            genera_resultados,
+            df["id_bono"],
+            df["fecha_valuacion"],
+            df["fecha_vencimiento"],
+            df["periodo_cupon"],
+            df["calendario"],
+            df["convencion"],
+            df["tv"],
+            df["vn"],
+            df["tipo_cambio"],
+            df["tasa_cupon"],
+            df["t_rend"],
+            df["tasa_mercado"],
+            df["sobre_tasa"],
+            df["dia_fijo"],
+            df["tipo_tasa"],
+            df["sobre_tasa_cupon"],
+        )
+    )
     
-        results = list(
-            map(
-                genera_resultados,
-                df["id_bono"],
-                df["fecha_valuacion"],
-                df["fecha_vencimiento"],
-                df["periodo_cupon"],
-                df["calendario"],
-                df["convencion"],
-                df["tv"],
-                df["vn"],
-                df["tipo_cambio"],
-                df["tasa_cupon"],
-                df["t_rend"],
-                df["tasa_mercado"],
-                df["sobre_tasa"],
-                df["dia_fijo"],
-                df["tipo_tasa"],
-                df["sobre_tasa_cupon"],
-            )
+    # Since the results are in a list of lists we need to retreive each component
+    # of the output.
+    
+    lista_val = [output[0] for output in results]
+    lista_flujos = [output[1] for output in results]
+    
+    
+    df_valuacion = pd.DataFrame(
+        lista_val,
+        columns=["id_bono", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
+    )
+    df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
+    
+    # ---- [] Results
+    
+    with st.expander("Valuación"):
+        st.write(df_valuacion
+                 .drop(columns = ['id_bono'])
+                 .rename(columns = {'px_sucio':'Precio Sucio',
+                                    'cupon_dev':'Interes Devengado',
+                                    'px_limpio':'Precio Limpio',
+                                    'duracion':'Duracion',
+                                    'convexidad':'Convexidad'})
         )
         
-        # Since the results are in a list of lists we need to retreive each component
-        # of the output.
+    with st.expander("Flujos Restantes"):
+        st.write(df_flujos
+                 .drop(columns = ['id_bono', 'plazo_next'])
+                 .rename(columns = {'fecha_cupon':'Fecha Cupon',
+                                    'plazo':'Plazo',
+                                    'dias_cupon':'Dias Cupon',
+                                    'vp_flujo':'VP Flujo'})
+                 )
+
+    
+    
+# if btn_val:
+    
+#     try:
+    
+#         results = list(
+#             map(
+#                 genera_resultados,
+#                 df["id_bono"],
+#                 df["fecha_valuacion"],
+#                 df["fecha_vencimiento"],
+#                 df["periodo_cupon"],
+#                 df["calendario"],
+#                 df["convencion"],
+#                 df["tv"],
+#                 df["vn"],
+#                 df["tipo_cambio"],
+#                 df["tasa_cupon"],
+#                 df["t_rend"],
+#                 df["tasa_mercado"],
+#                 df["sobre_tasa"],
+#                 df["dia_fijo"],
+#                 df["tipo_tasa"],
+#                 df["sobre_tasa_cupon"],
+#             )
+#         )
         
-        lista_val = [output[0] for output in results]
-        lista_flujos = [output[1] for output in results]
+#         # Since the results are in a list of lists we need to retreive each component
+#         # of the output.
+        
+#         lista_val = [output[0] for output in results]
+#         lista_flujos = [output[1] for output in results]
         
         
-        df_valuacion = pd.DataFrame(
-            lista_val,
-            columns=["id_bono", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
-        )
-        df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
+#         df_valuacion = pd.DataFrame(
+#             lista_val,
+#             columns=["id_bono", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
+#         )
+#         df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
         
-        # ---- [] Results
+#         # ---- [] Results
         
-        with st.expander("Valuación"):
-            st.write(df_valuacion
-                     .drop(columns = ['id_bono'])
-                     .rename(columns = {'px_sucio':'Precio Sucio',
-                                        'cupon_dev':'Interes Devengado',
-                                        'px_limpio':'Precio Limpio',
-                                        'duracion':'Duracion',
-                                        'convexidad':'Convexidad'})
-            )
+#         with st.expander("Valuación"):
+#             st.write(df_valuacion
+#                      .drop(columns = ['id_bono'])
+#                      .rename(columns = {'px_sucio':'Precio Sucio',
+#                                         'cupon_dev':'Interes Devengado',
+#                                         'px_limpio':'Precio Limpio',
+#                                         'duracion':'Duracion',
+#                                         'convexidad':'Convexidad'})
+#             )
             
-        with st.expander("Flujos Restantes"):
-            st.write(df_flujos
-                     .drop(columns = ['id_bono', 'plazo_next'])
-                     .rename(columns = {'fecha_cupon':'Fecha Cupon',
-                                        'plazo':'Plazo',
-                                        'dias_cupon':'Dias Cupon',
-                                        'vp_flujo':'VP Flujo'})
-                     )
+#         with st.expander("Flujos Restantes"):
+#             st.write(df_flujos
+#                      .drop(columns = ['id_bono', 'plazo_next'])
+#                      .rename(columns = {'fecha_cupon':'Fecha Cupon',
+#                                         'plazo':'Plazo',
+#                                         'dias_cupon':'Dias Cupon',
+#                                         'vp_flujo':'VP Flujo'})
+#                      )
             
-    except:
+#     except:
         
-        st.error("Se configuró de forma erronea el instrumento a valuar. Por favor revise los inputs nuevamente.")
+#         st.error("Se configuró de forma erronea el instrumento a valuar. Por favor revise los inputs nuevamente.")
     
 
     
