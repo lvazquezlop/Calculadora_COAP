@@ -74,6 +74,7 @@ if df_cartera_in:
         st.write(df
                  .drop(columns = ['calendario'])
                  .rename(columns = {'id_bono':'ID Bono',
+                                    'isin':'ISIN',
                                     'fecha_valuacion':'Fecha Valuacion',
                                     'fecha_vencimiento':'Fecha Vencimiento',
                                     'periodo_cupon':'Periodo Cupon',
@@ -104,6 +105,7 @@ if df_cartera_in:
         map(
             genera_resultados,
             df["id_bono"],
+            df["isin"],
             df["fecha_valuacion"],
             df["fecha_vencimiento"],
             df["periodo_cupon"],
@@ -118,7 +120,7 @@ if df_cartera_in:
             df["sobre_tasa"],
             df["dia_fijo"],
             df["tipo_tasa"],
-            df["sobre_tasa_cupon"],
+            df["sobre_tasa_cupon"]
         )
     )
     
@@ -131,13 +133,14 @@ if df_cartera_in:
     
     df_valuacion = pd.DataFrame(
         lista_val,
-        columns=["id_bono", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
+        columns=["id_bono", "isin", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
     )
     df_flujos = pd.concat(lista_flujos, axis=0, ignore_index=True)
     
     with st.expander("Valuación"):
         st.write(df_valuacion
                  .rename(columns = {'id_bono':'ID Bono',
+                                    'isin':'ISIN',
                                     'px_sucio':'Precio Sucio',
                                     'cupon_dev':'Interes Devengado',
                                     'px_limpio':'Precio Limpio',
@@ -162,6 +165,7 @@ if df_cartera_in:
             df_flujos[df_flujos["id_bono"].isin(isin_selection)]
             .drop(columns=["plazo_next"])
             .rename(columns = {'id_bono':'ID Bono',
+                               'isin':'ISIN',
                                'fecha_cupon':'Fecha Cupon',
                                'plazo':'Plazo',
                                'dias_cupon':'Dias Cupon',
