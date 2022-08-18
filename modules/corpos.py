@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 from bizdays import Calendar
 
-from Code.fechas import *
+from fechas import *
 
 
 # ---- Calendarios ----

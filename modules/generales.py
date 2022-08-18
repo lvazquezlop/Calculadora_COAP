@@ -4,10 +4,10 @@ import pandas as pd
 import datetime
 from bizdays import Calendar
 
-from Code.fechas import *
-from Code.gubernamentales import *
-from Code.eurobonos import *
-from Code.corpos import *
+from fechas import *
+from gubernamentales import *
+from eurobonos import *
+from corpos import *
 
 # ---- Calendarios ----
 
