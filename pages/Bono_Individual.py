@@ -241,10 +241,11 @@ with c11:
     
     
 if btn_val:
-    
+     
     results = list(
         map(
             genera_resultados,
+            df["id_bono"],
             df["id_bono"],
             df["fecha_valuacion"],
             df["fecha_vencimiento"],
@@ -260,7 +261,7 @@ if btn_val:
             df["sobre_tasa"],
             df["dia_fijo"],
             df["tipo_tasa"],
-            df["sobre_tasa_cupon"],
+            df["sobre_tasa_cupon"]
         )
     )
     
@@ -273,7 +274,7 @@ if btn_val:
     
     df_valuacion = pd.DataFrame(
         lista_val,
-        columns=["id_bono", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
+        columns=["id_bono", "isin", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
     )
     df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
     
