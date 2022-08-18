@@ -180,7 +180,9 @@ with st.sidebar.form(key = 'btn_data'):
     # Si no es tasa variable...
     else:
         market_yield = 0
+        select_coupon_spread = 0
         rate_yield = select_yield
+        
         
           
     submit_button = st.form_submit_button(label="✨ Ingresar datos!")
