@@ -146,6 +146,8 @@ if df_cartera_in:
                                     'px_limpio':'Precio Limpio',
                                     'duracion':'Duracion',
                                     'convexidad':'Convexidad'})
+                 .style
+                 .format("{:.6f}")
         )
     
     
@@ -169,6 +171,7 @@ if df_cartera_in:
                                'fecha_cupon':'Fecha Cupon',
                                'plazo':'Plazo',
                                'dias_cupon':'Dias Cupon',
+                               'factor_descuento':'Factor Descuento',
                                'vp_flujo':'VP Flujo'})
         )
         

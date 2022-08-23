@@ -24,7 +24,7 @@ euros_cuponados = ['D1', 'D1SP', 'D4', 'D4SP', 'D5', 'D5SP', 'D6', 'D6SP']
 euros_cupon_cero = ['D2', 'D2SP', 'D3', 'D3SP', 'D7', 'D7SP', 'D8', 'D8SP']
 
 corpos_completo = ['2','71','73','75','90','91','91SP','92','93','93SP','94','94SP',
-                   '95','97','98','CD','D','D2','D7','D8','F','FSP','G','I','IL',
+                   '95','97','98','CD','D','F','FSP','G','I','IL',
                    'JE','J', 'JI','JSP','Q','QSP','R1']
 
 all_tv = gubernamentales_cuponados + gubernamentales_cupon_cero + euros_cuponados + euros_cupon_cero + corpos_completo
@@ -68,19 +68,6 @@ with st.sidebar.form(key = 'btn_data'):
     select_yield_spread = 0
     select_coupon_spread = 0
     
-    
-    
-    
-    # Tipo Tasa
-    # select_type_yield = st.radio(label = "Tipo Tasa",
-    #                      options = ['Fija', 'Variable', 'Cero'],
-    #                      index = 0,
-    #                      help = 'La opción tasa cero aplica para los bonos corporativos que son valuados como un CETE.',
-    #                      horizontal = True)
-    
-    # select_type_yield = select_type_yield.lower()
-    #st.write(select_type_yield)
-
 
     # Fecha Valuación
     valuation_date = st.date_input("📅 Fecha Valuación:")
@@ -91,8 +78,10 @@ with st.sidebar.form(key = 'btn_data'):
     end_date = st.date_input("📅 Fecha Vencimiento:")
     end_date = str(end_date)
     end_date = end_date.split('-')
-        
-    # TV y Periodo Cupón
+    
+    # === Todos Comparten ===
+    
+    # TV y VN
     c1, c2 = st.columns(2)
     
     with c1:
@@ -102,59 +91,86 @@ with st.sidebar.form(key = 'btn_data'):
                                  help = 'Se encuentran listados todos los tipos valor documentados en los manuales de Valmer para eurobonos,gubernamentales y corporativos')
         
     with c2:
-        cupon_period = st.selectbox(label = "Periodo Cupón: ",
-                                    options = cupon_period_list,
-                                    index = 5)
-        
-    # VN y Día Fijo
-    c3, c4 = st.columns(2)
-    
-    with c3:
         face_value = st.text_input(label = "Nominal: ",
                                    value = "0.00")
         face_value = float(face_value)
         
-        
-    with c4:
-        select_fixed_day = st.selectbox(label = "Cupón en Día Fijo:",
-                                        options = ['Si', 'No'])
-        
-        select_fixed_day = select_fixed_day.lower()
-        
-    # Convención Días y Tipo de Cambio
-    c5, c6 = st.columns(2)
+    # Convencion Días y Tipo de cambio
+    c3, c4 = st.columns(2)
     
-    with c5:
+    with c3:
         select_daycount_convention = st.selectbox(label = "Convención Días: ",
                                                   options = daycount_list,
                                                   index = 2)
         
-    with c6:
+    with c4:
         exchange_rate = st.text_input(label = "Tipo de Cambio",
                                       value = "1.00")
         exchange_rate = float(exchange_rate)
         
     
-    # Tasa Rendimiento y Tasa Cupón    
-    c7, c8 = st.columns(2)
+        
+    # Tasa de rendimiento
     
-    with c7:
-        select_yield = st.text_input(label = "Tasa Rendimiento: ",
-                                     value = "0.00",
-                                     help = "Tasa en %")
+    select_yield = st.text_input(label = "Tasa Rendimiento: ",
+                                 value = "0.00",
+                                 help = "Tasa en %")
+    
+    select_yield = float(select_yield) / 100
+
+    
+    # === Tasa Fija ====
+    
+    if select_type_yield == 'fija':
         
-        select_yield = float(select_yield) / 100
+        cupon_period = st.selectbox(label = "Periodo Cupón: ",
+                                    options = cupon_period_list,
+                                    index = 5)
+            
+        c7, c8 = st.columns(2)
         
-    with c8:
-        select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
-                                           value = "0.00",
-                                           help = "Tasa en %")
+        with c7:
+            select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
+                                               value = "0.00",
+                                               help = "Tasa en %")
+            
+            select_coupon_rate = float(select_coupon_rate) / 100
         
-        select_coupon_rate = float(select_coupon_rate) / 100
+        with c8:
+            select_fixed_day = st.selectbox(label = "Cupón en Día Fijo:",
+                                            options = ['Si', 'No'])
+            
+            select_fixed_day = select_fixed_day.lower()
+            
+        market_yield = 0
+        select_coupon_spread = 0
+        rate_yield = select_yield
+                
+    
         
         
     # Si es tasa variable...
-    if select_type_yield == 'variable':
+    elif select_type_yield == 'variable':
+    
+        cupon_period = st.selectbox(label = "Periodo Cupón: ",
+                                    options = cupon_period_list,
+                                    index = 5)
+            
+        c7, c8 = st.columns(2)
+        
+        
+        with c7:
+            select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
+                                               value = "0.00",
+                                               help = "Tasa en %")
+            
+            select_coupon_rate = float(select_coupon_rate) / 100
+        
+        with c8:
+            select_fixed_day = st.selectbox(label = "Cupón en Día Fijo:",
+                                            options = ['Si', 'No'])
+            
+            select_fixed_day = select_fixed_day.lower()
         
         
         # Sobretasa Mercado y Sobretasa Cupón
@@ -177,8 +193,16 @@ with st.sidebar.form(key = 'btn_data'):
         market_yield =  select_yield
         rate_yield = 0
         
-    # Si no es tasa variable...
+    # === Cupón Cero ====
     else:
+        
+        select_fixed_day = 'no'
+        select_coupon_rate = 0
+        cupon_period = 0
+        
+        select_yield_spread = 0
+        select_coupon_spread = 0
+        
         market_yield = 0
         select_coupon_spread = 0
         rate_yield = select_yield
@@ -240,67 +264,6 @@ with c11:
     btn_val = st.button("Realiza Valuación")
     
     
-# if btn_val:
-     
-#     results = list(
-#         map(
-#             genera_resultados,
-#             df["id_bono"],
-#             df["id_bono"],
-#             df["fecha_valuacion"],
-#             df["fecha_vencimiento"],
-#             df["periodo_cupon"],
-#             df["calendario"],
-#             df["convencion"],
-#             df["tv"],
-#             df["vn"],
-#             df["tipo_cambio"],
-#             df["tasa_cupon"],
-#             df["t_rend"],
-#             df["tasa_mercado"],
-#             df["sobre_tasa"],
-#             df["dia_fijo"],
-#             df["tipo_tasa"],
-#             df["sobre_tasa_cupon"]
-#         )
-#     )
-    
-#     # Since the results are in a list of lists we need to retreive each component
-#     # of the output.
-    
-#     lista_val = [output[0] for output in results]
-#     lista_flujos = [output[1] for output in results]
-    
-    
-#     df_valuacion = pd.DataFrame(
-#         lista_val,
-#         columns=["id_bono", "isin", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
-#     )
-#     df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
-    
-#     # ---- [] Results
-    
-#     with st.expander("Valuación"):
-#         st.write(df_valuacion
-#                   .drop(columns = ['id_bono', 'isin'])
-#                   .rename(columns = {'px_sucio':'Precio Sucio',
-#                                     'cupon_dev':'Interes Devengado',
-#                                     'px_limpio':'Precio Limpio',
-#                                     'duracion':'Duracion',
-#                                     'convexidad':'Convexidad'})
-#         )
-        
-#     with st.expander("Flujos Restantes"):
-#         st.write(df_flujos
-#                   .drop(columns = ['id_bono', 'plazo_next'])
-#                   .rename(columns = {'fecha_cupon':'Fecha Cupon',
-#                                     'plazo':'Plazo',
-#                                     'dias_cupon':'Dias Cupon',
-#                                     'vp_flujo':'VP Flujo'})
-#                   )
-
-    
-    
 if btn_val:
     
     try:
@@ -351,6 +314,8 @@ if btn_val:
                                         'px_limpio':'Precio Limpio',
                                         'duracion':'Duracion',
                                         'convexidad':'Convexidad'})
+                      .style
+                      .format("{:.6f}")
             )
             
         with st.expander("Flujos Restantes"):
@@ -359,6 +324,7 @@ if btn_val:
                       .rename(columns = {'fecha_cupon':'Fecha Cupon',
                                         'plazo':'Plazo',
                                         'dias_cupon':'Dias Cupon',
+                                        'factor_descuento':'Factor Descuento',
                                         'vp_flujo':'VP Flujo'})
                       )
             
