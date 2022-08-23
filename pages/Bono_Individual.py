@@ -10,21 +10,20 @@ import os
 from modules.generales import *
 
 
-
 # ---- Helpers ---------
 
 # ---- [] TVs
 gubernamentales_cuponados = ['M', 'S','2U','PI', 'IM', 'IQ', 'IS', 'LD', 'LF']
 gubernamentales_cupon_cero = ['BI','MC','MP', 'SC', 'SP']
 
-euros_cuponados = ['D1', 'D1SP', 'D4', 'D4SP', 'D5', 'D5SP', 'D6', 'D6SP']
-euros_cupon_cero = ['D2', 'D2SP', 'D3', 'D3SP', 'D7', 'D7SP', 'D8', 'D8SP']
+euros_completo = ['D1', 'D1SP', 'D4', 'D4SP', 'D5', 'D5SP', 'D6', 'D6SP',
+                  'D2', 'D2SP', 'D3', 'D3SP', 'D7', 'D7SP', 'D8', 'D8SP']
 
 corpos_completo = ['2','71','73','75','90','91','91SP','92','93','93SP','94','94SP',
                    '95','97','98','CD','D','F','FSP','G','I','IL',
                    'JE','J', 'JI','JSP','Q','QSP','R1']
 
-all_tv = gubernamentales_cuponados + gubernamentales_cupon_cero + euros_cuponados + euros_cupon_cero + corpos_completo
+all_tv = gubernamentales_cuponados + gubernamentales_cupon_cero + euros_completo + corpos_completo
 all_tv = list(set(all_tv))
 
 # ---- [] Periodos Cupón
@@ -120,18 +119,20 @@ with st.sidebar.form(key = 'btn_data'):
     
     if select_type_yield == 'fija':
         
-        cupon_period = st.selectbox(label = "Periodo Cupón: ",
-                                    options = cupon_period_list,
-                                    index = 5)
+        select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
+                                           value = "0.00",
+                                           help = "Tasa en %")
+        
+        select_coupon_rate = float(select_coupon_rate) / 100
+        
+        
             
         c7, c8 = st.columns(2)
         
         with c7:
-            select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
-                                               value = "0.00",
-                                               help = "Tasa en %")
-            
-            select_coupon_rate = float(select_coupon_rate) / 100
+            cupon_period = st.selectbox(label = "Periodo Cupón: ",
+                                        options = cupon_period_list,
+                                        index = 5)
         
         with c8:
             select_fixed_day = st.selectbox(label = "Cupón en Día Fijo:",
@@ -148,20 +149,21 @@ with st.sidebar.form(key = 'btn_data'):
         
     # Si es tasa variable...
     elif select_type_yield == 'variable':
+        
+        select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
+                                           value = "0.00",
+                                           help = "Tasa en %")
+        
+        select_coupon_rate = float(select_coupon_rate) / 100
     
-        cupon_period = st.selectbox(label = "Periodo Cupón: ",
-                                    options = cupon_period_list,
-                                    index = 5)
             
         c7, c8 = st.columns(2)
         
         
         with c7:
-            select_coupon_rate = st.text_input(label = "Tasa Cupón: ",
-                                               value = "0.00",
-                                               help = "Tasa en %")
-            
-            select_coupon_rate = float(select_coupon_rate) / 100
+            cupon_period = st.selectbox(label = "Periodo Cupón: ",
+                                        options = cupon_period_list,
+                                        index = 5)
         
         with c8:
             select_fixed_day = st.selectbox(label = "Cupón en Día Fijo:",
@@ -259,7 +261,7 @@ _, c11, _ = st.columns(3)
 
 with c11:
     btn_val = st.button("Realiza Valuación")
-    
+            
     
 if btn_val:
     
