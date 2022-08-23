@@ -219,8 +219,3 @@ def intereses_devengados_eurobono(vn, convencion, tasa_cupon, dias_devengado, pe
      
     return int_dev
     
-
-
-
-
-

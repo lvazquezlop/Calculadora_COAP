@@ -5,7 +5,6 @@ import datetime
 from bizdays import Calendar
 
 from modules.fechas import *
-#from Code.modules.fechas import *
 
 
 # ---- Calendarios ----

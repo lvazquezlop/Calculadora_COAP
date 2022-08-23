@@ -9,6 +9,7 @@ from modules.gubernamentales import *
 from modules.eurobonos import *
 from modules.corpos import *
 
+
 # ---- Calendarios ----
 
 # Sección donde se cargan los calendarios necesarios en el proceso de generación
@@ -85,8 +86,8 @@ def genera_resultados(id_bono, isin, fecha_valuacion, fecha_vencimiento, periodo
     gubernamentales_cuponados = ['M', 'S','2U','PI', 'IM', 'IQ', 'IS', 'LD', 'LF']
     gubernamentales_cupon_cero = ['BI','MC','MP', 'SC', 'SP']
     
-    euros_cuponados = ['D1', 'D1SP', 'D4', 'D4SP', 'D5', 'D5SP', 'D6', 'D6SP']
-    euros_cupon_cero = ['D2', 'D2SP', 'D3', 'D3SP', 'D7', 'D7SP', 'D8', 'D8SP']
+    euros_completo = ['D1', 'D1SP', 'D4', 'D4SP', 'D5', 'D5SP', 'D6', 'D6SP',
+                      'D2', 'D2SP', 'D3', 'D3SP', 'D7', 'D7SP', 'D8', 'D8SP']
     
     corpos_completo = ['2','71','73','75','90','91','91SP','92','93','93SP','94','94SP',
                        '95','97','98','CD','D','F','FSP','G','I','IL',
@@ -150,42 +151,66 @@ def genera_resultados(id_bono, isin, fecha_valuacion, fecha_vencimiento, periodo
     # ==== Eurobonos =====
         
         
-    elif tv in euros_cuponados:
+    elif tv in euros_completo:
         
-        # Valuación
+        if tipo_tasa in ['fija', 'variable']:
+            
         
-        df_val, fecha_c_prev = valua_eurobono(fecha_valuacion = fecha_valuacion,
-                                              fecha_vencimiento = fecha_vencimiento,
-                                              calendario = calendario,
-                                              periodo_cupon = periodo_cupon,
-                                              convencion = convencion,
-                                              dia_fijo = dia_fijo,
-                                              vn = vn,
-                                              tv = tv,
-                                              tasa_cupon = tasa_cupon,
-                                              t_rend = t_rend,
-                                              tipo_tasa = tipo_tasa)
+            # Valuación
         
-        
-        
-        px_sucio = sum(df_val['vp_flujo']) * tipo_cambio
-        
-        # Cupón devengado - Intereses
-        aux1 = datetime.datetime.strptime(fecha_valuacion, date_format)
-        aux2 = fecha_c_prev
-        dias_dev = calcula_plazo(convention = convencion, date1 = aux2, date2 = aux1)
-        
-        int_dev = intereses_devengados_eurobono(vn = vn,
-                                                convencion = convencion,
-                                                tasa_cupon = tasa_cupon,
-                                                dias_devengado = dias_dev,
-                                                periodo_cupon = periodo_cupon)
-        
-        
-        int_dev = int_dev * tipo_cambio
-        
-        # Precio limpio.
-        px_limpio = px_sucio - int_dev
+            df_val, fecha_c_prev = valua_eurobono(fecha_valuacion = fecha_valuacion,
+                                                  fecha_vencimiento = fecha_vencimiento,
+                                                  calendario = calendario,
+                                                  periodo_cupon = periodo_cupon,
+                                                  convencion = convencion,
+                                                  dia_fijo = dia_fijo,
+                                                  vn = vn,
+                                                  tv = tv,
+                                                  tasa_cupon = tasa_cupon,
+                                                  t_rend = t_rend,
+                                                  tipo_tasa = tipo_tasa)
+            
+            
+            
+            px_sucio = sum(df_val['vp_flujo']) * tipo_cambio
+            
+            # Cupón devengado - Intereses
+            
+            aux1 = datetime.datetime.strptime(fecha_valuacion, date_format)
+            aux2 = fecha_c_prev
+            dias_dev = calcula_plazo(convention = convencion, date1 = aux2, date2 = aux1)
+            
+            int_dev = intereses_devengados_eurobono(vn = vn,
+                                                    convencion = convencion,
+                                                    tasa_cupon = tasa_cupon,
+                                                    dias_devengado = dias_dev,
+                                                    periodo_cupon = periodo_cupon)
+            
+            
+            int_dev = int_dev * tipo_cambio
+            
+            # Precio limpio.
+            px_limpio = px_sucio - int_dev
+            
+        elif tipo_tasa == 'cero':
+            
+            # Valuación --> Lo estamos valuando como un cupón cero corporativo
+            
+            df_val, px_sucio = valua_cupon_cero_corpo(id_bono = id_bono,
+                                                      fecha_valuacion = fecha_valuacion,
+                                                      fecha_vencimiento = fecha_vencimiento,
+                                                      vn = vn,
+                                                      t_rend = t_rend)
+            
+            df_val['vp_flujo'] = px_sucio
+            df_val['plazo_next'] = (df_val['plazo'][0] / 365) * (df_val['plazo'][0] / 365 + 1)
+            
+            # Precio Limpio
+            int_dev = 0
+            px_limpio = px_sucio * tipo_cambio
+            
+        else:
+            pass
         
     
     # ==== Corporativos ====
@@ -251,7 +276,7 @@ def genera_resultados(id_bono, isin, fecha_valuacion, fecha_vencimiento, periodo
     
     # Px sucio auxiliar para el cálculo de la duración y convexidad.
     
-    px_sucio_aux = px_sucio / tipo_cambio if tv in euros_cuponados + euros_cupon_cero else px_sucio
+    px_sucio_aux = px_sucio / tipo_cambio if tv in euros_completo else px_sucio
     
     # Duración
     duration = duracion_bono(v_plazos = df_val['plazo'],
