@@ -325,13 +325,25 @@ def genera_fechas_cupon(fecha_valuacion, fecha_vencimiento, calendario, periodo_
         
     df_out_aux = pd.DataFrame(out, columns = ['fecha_cupon', 'plazo', 'dias_cupon']).sort_values(by = ['fecha_cupon'], ascending = True)
     
+    # Revisamos que sólo haya 1 plazo negativo.
+    
+    n_negativos = len(df_out_aux[df_out_aux['plazo'] < 0])
+    
+    if n_negativos > 1:
+        
+        df_negativos_aux = df_out_aux[df_out_aux['plazo'] < 0].copy()
+        idx_negativos = df_negativos_aux.index[-1]
+        
+        df_out_aux = df_out_aux[df_out_aux.index.isin(range(idx_negativos + 1))]
+        
+    
     # Obtenemos la fecha del cupón previo a la fecha de valuación.
     
     fecha_c_previo_aux = df_out_aux['fecha_cupon'].iloc[0]
     
+    
     # Una vez que se obtiene la fecha cupón previa a la fecha de valuación
     # se construyen las fechas cupón efectivas.
-    
     
     # Forward ---
     
@@ -426,41 +438,3 @@ def mapea_cupones_anuales(periodo_cupon):
         pass
     
     return cupones_anuales
-        
-        
-                
-                
-
-            
-            
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

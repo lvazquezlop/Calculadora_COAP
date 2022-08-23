@@ -5,6 +5,7 @@ import datetime
 from bizdays import Calendar
 
 from modules.fechas import *
+#from Code.modules.fechas import *
 
 
 # ---- Calendarios ----
@@ -78,7 +79,8 @@ def valua_cupon_cero(id_bono, fecha_valuacion, fecha_vencimiento, vn, tv, tipo_c
     
     dict_temp = {'fecha_cupon':[fecha_vencimiento], 
                  'plazo':[dias_restantes],
-                 'dias_cupon':[0]}
+                 'dias_cupon':[0],
+                 'factor_descuento':[factor_descuento]}
     
     df_out = pd.DataFrame(dict_temp)
         
@@ -305,7 +307,7 @@ def vp_flujo_gubernamental(vn, tasa_cupon, dias_cupon, n_cupon, n_total, t_rend,
     else:
         pass
 
-    return vp
+    return vp, factor_descuento
 
 # ---- Valuación Bonos Gubernamentales Mx ----
 
@@ -369,36 +371,41 @@ def valua_bono_gubernamental(fecha_valuacion, fecha_vencimiento, periodo_cupon, 
     # Vectores auxiliares.
     vp_flujos = []
     plazos_next = []
+    factores_descuento = []
     
     for i in range(1, n_restantes + 1):
         
         # Valor presente del flujo i.
-        vp = vp_flujo_gubernamental(vn = vn,
-                                    tasa_cupon = tasa_cupon,
-                                    dias_cupon = df_fechas['dias_cupon'][i - 1],
-                                    n_cupon = i,
-                                    n_total = n_restantes,
-                                    t_rend = t_rend, 
-                                    plazo = df_fechas['plazo'][i - 1],
-                                    tv = tv,
-                                    tipo_cambio = tipo_cambio,
-                                    tasa_mercado = tasa_mercado,
-                                    sobre_tasa = sobre_tasa,
-                                    fecha_valuacion = fecha_valuacion,
-                                    fecha_vencimiento = fecha_vencimiento,
-                                    calendario = calendario,
-                                    periodo_cupon = periodo_cupon,
-                                    convencion = convencion,
-                                    dia_fijo = dia_fijo)
+        vp, factor_descuento = vp_flujo_gubernamental(vn = vn,
+                                                      tasa_cupon = tasa_cupon,
+                                                      dias_cupon = df_fechas['dias_cupon'][i - 1],
+                                                      n_cupon = i,
+                                                      n_total = n_restantes,
+                                                      t_rend = t_rend, 
+                                                      plazo = df_fechas['plazo'][i - 1],
+                                                      tv = tv,
+                                                      tipo_cambio = tipo_cambio,
+                                                      tasa_mercado = tasa_mercado,
+                                                      sobre_tasa = sobre_tasa,
+                                                      fecha_valuacion = fecha_valuacion,
+                                                      fecha_vencimiento = fecha_vencimiento,
+                                                      calendario = calendario,
+                                                      periodo_cupon = periodo_cupon,
+                                                      convencion = convencion,
+                                                      dia_fijo = dia_fijo)
         
         # Plazo siguiente - se utiliza para el cálculo de la duración y convexidad.
         plazo_next = (df_fechas['plazo'][i - 1] / 365) * (df_fechas['plazo'][i - 1] / 365 + 1)
         
         vp_flujos.append(vp)
         plazos_next.append(plazo_next)
+        factores_descuento.append(factor_descuento)
         
+    
+    df_fechas['factor_descuento'] = factores_descuento
     df_fechas['vp_flujo'] = vp_flujos
     df_fechas['plazo_next'] = plazos_next
+    
     
     return df_fechas, fecha_c_previo
 
@@ -407,6 +414,19 @@ def valua_bono_gubernamental(fecha_valuacion, fecha_vencimiento, periodo_cupon, 
 
 
 
-
+#----
+# valua_bono_gubernamental(fecha_valuacion = '16/02/2022',
+#                          fecha_vencimiento = '05/09/2024',
+#                          periodo_cupon = 182, 
+#                          calendario = 'MXN',
+#                          convencion = 'actual/360',
+#                          tv = 'M',
+#                          vn = 100,
+#                          tipo_cambio = 1,
+#                          tasa_cupon = 0.08,
+#                          t_rend = 0.056496266,
+#                          tasa_mercado = 0,
+#                          sobre_tasa = 0,
+#                          dia_fijo = 'no')
 
 

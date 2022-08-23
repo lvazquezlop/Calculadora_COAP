@@ -128,7 +128,7 @@ def vp_flujo_euro(vn, tipo_tasa, convencion, tasa_cupon, cupones_anuales, n_cupo
     vp = flujo * factor_descuento
     
     
-    return vp
+    return vp, factor_descuento
 
 
 def valua_eurobono(fecha_valuacion, fecha_vencimiento, calendario, periodo_cupon, convencion, dia_fijo, vn, tv, tasa_cupon, t_rend, tipo_tasa):
@@ -153,6 +153,7 @@ def valua_eurobono(fecha_valuacion, fecha_vencimiento, calendario, periodo_cupon
     # Vectores auxiliares.
     vp_flujos = []
     plazos_next = []
+    factores_descuento = []
     
     # Iteramos sobre todos los cupones restantes.
     
@@ -160,17 +161,17 @@ def valua_eurobono(fecha_valuacion, fecha_vencimiento, calendario, periodo_cupon
         
         # Valor presente del flujo i
         
-        vp = vp_flujo_euro(vn = vn,
-                           tipo_tasa = tipo_tasa,
-                           convencion = convencion,
-                           tasa_cupon = tasa_cupon,
-                           cupones_anuales = cupones_anuales,
-                           n_cupon = i,
-                           n_total = n_restantes,
-                           periodo_cupon = periodo_cupon,
-                           t_rend = t_rend,
-                           dias_cupon = df_fechas['dias_cupon'][i - 1],
-                           plazo = df_fechas['plazo'][i - 1])
+        vp, factor_descuento = vp_flujo_euro(vn = vn,
+                                             tipo_tasa = tipo_tasa,
+                                             convencion = convencion,
+                                             tasa_cupon = tasa_cupon,
+                                             cupones_anuales = cupones_anuales,
+                                             n_cupon = i,
+                                             n_total = n_restantes,
+                                             periodo_cupon = periodo_cupon,
+                                             t_rend = t_rend,
+                                             dias_cupon = df_fechas['dias_cupon'][i - 1],
+                                             plazo = df_fechas['plazo'][i - 1])
         
         
         
@@ -179,9 +180,12 @@ def valua_eurobono(fecha_valuacion, fecha_vencimiento, calendario, periodo_cupon
         plazo_next = (df_fechas['plazo'][i - 1] / 365) * (df_fechas['plazo'][i - 1] / 365 + 1)
         
         # Asignamos resultados
+        factores_descuento.append(factor_descuento)
         vp_flujos.append(vp)
         plazos_next.append(plazo_next)
         
+    
+    df_fechas['factor_descuento'] = factores_descuento
     df_fechas['vp_flujo'] = vp_flujos
     df_fechas['plazo_next'] = plazos_next
     

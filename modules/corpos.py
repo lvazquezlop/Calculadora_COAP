@@ -66,7 +66,8 @@ def valua_cupon_cero_corpo(id_bono, fecha_valuacion, fecha_vencimiento, vn, t_re
     
     dict_temp = {'fecha_cupon':[fecha_vencimiento], 
                  'plazo':[dias_restantes],
-                 'dias_cupon':[0]}
+                 'dias_cupon':[0],
+                 'factor_descuento':[factor_descuento]}
     
     df_out = pd.DataFrame(dict_temp)
         
@@ -306,7 +307,7 @@ def vp_flujo_corpo(vn, tasa_cupon, dias_cupon, n_cupon, n_total, t_rend, plazo, 
     
     
 
-    return vp
+    return vp, factor_descuento
 
 
 def valua_bono_corporativo(fecha_valuacion, fecha_vencimiento, periodo_cupon, calendario, convencion, tipo_tasa, vn, tasa_cupon, t_rend, tasa_mercado, sobre_tasa, dia_fijo, sobre_tasa_cupon):
@@ -367,31 +368,34 @@ def valua_bono_corporativo(fecha_valuacion, fecha_vencimiento, periodo_cupon, ca
     # Vectores auxiliares.
     vp_flujos = []
     plazos_next = []
+    factores_descuento = []
     
     for i in range(1, n_restantes + 1):
         
         # Valor presente del flujo i.
-        vp = vp_flujo_corpo(vn = vn,
-                      tasa_cupon = tasa_cupon,
-                      dias_cupon = df_fechas['dias_cupon'][i - 1],
-                      n_cupon = i,
-                      n_total = n_restantes,
-                      t_rend = t_rend, 
-                      plazo = df_fechas['plazo'][i - 1],
-                      tipo_tasa = tipo_tasa,
-                      tasa_mercado = tasa_mercado,
-                      sobre_tasa = sobre_tasa,
-                      sobre_tasa_cupon = sobre_tasa_cupon,
-                      convencion = convencion,
-                      cupones_anuales = cupones_anuales,
-                      periodo_cupon = periodo_cupon)
+        vp, factor_descuento = vp_flujo_corpo(vn = vn,
+                                              tasa_cupon = tasa_cupon,
+                                              dias_cupon = df_fechas['dias_cupon'][i - 1],
+                                              n_cupon = i,
+                                              n_total = n_restantes,
+                                              t_rend = t_rend, 
+                                              plazo = df_fechas['plazo'][i - 1],
+                                              tipo_tasa = tipo_tasa,
+                                              tasa_mercado = tasa_mercado,
+                                              sobre_tasa = sobre_tasa,
+                                              sobre_tasa_cupon = sobre_tasa_cupon,
+                                              convencion = convencion,
+                                              cupones_anuales = cupones_anuales,
+                                              periodo_cupon = periodo_cupon)
 
         # Plazo siguiente - se utiliza para el cálculo de la duración y convexidad.
         plazo_next = (df_fechas['plazo'][i - 1] / 365) * (df_fechas['plazo'][i - 1] / 365 + 1)
         
+        factores_descuento.append(factor_descuento)
         vp_flujos.append(vp)
         plazos_next.append(plazo_next)
         
+    df_fechas['factor_descuento'] = factores_descuento
     df_fechas['vp_flujo'] = vp_flujos
     df_fechas['plazo_next'] = plazos_next
     
