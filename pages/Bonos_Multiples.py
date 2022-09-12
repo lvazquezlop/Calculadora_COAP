@@ -49,13 +49,8 @@ st.markdown("Para que se realice el proceso basta con cargar el archivo con las 
 
 # ---- [] Upload files
 
-main_c_1, main_c_2 = st.columns(2)
 
-with main_c_1:
-    df_cartera_in = st.file_uploader("Cartera COAP", type = ".csv")
-
-with main_c_2:
-    df_vector_in = st.file_uploader("Vector Valmer", type = ".csv")
+df_cartera_in = st.file_uploader("Cartera COAP", type = ".csv")
 
 
 if df_cartera_in:
@@ -100,103 +95,98 @@ if df_cartera_in:
     )
     
     # ---- Valuation Process ---------
+
+    results = list(
+        map(
+            genera_resultados,
+            df["id_bono"],
+            df["isin"],
+            df["fecha_valuacion"],
+            df["fecha_vencimiento"],
+            df["periodo_cupon"],
+            df["calendario"],
+            df["convencion"],
+            df["tv"],
+            df["vn"],
+            df["tipo_cambio"],
+            df["tasa_cupon"],
+            df["t_rend"],
+            df["tasa_mercado"],
+            df["sobre_tasa"],
+            df["dia_fijo"],
+            df["tipo_tasa"],
+            df["sobre_tasa_cupon"]
+        )
+    )
     
-    try:
+    # Since the results are in a list of lists we need to retreive each component
+    # of the output.
     
-        results = list(
-            map(
-                genera_resultados,
-                df["id_bono"],
-                df["id_bono"],
-                df["fecha_valuacion"],
-                df["fecha_vencimiento"],
-                df["periodo_cupon"],
-                df["calendario"],
-                df["convencion"],
-                df["tv"],
-                df["vn"],
-                df["tipo_cambio"],
-                df["tasa_cupon"],
-                df["t_rend"],
-                df["tasa_mercado"],
-                df["sobre_tasa"],
-                df["dia_fijo"],
-                df["tipo_tasa"],
-                df["sobre_tasa_cupon"]
+    lista_val = [output[0] for output in results]
+    lista_flujos = [output[1] for output in results]
+    
+    
+    df_valuacion = pd.DataFrame(
+        lista_val,
+        columns=["id_bono", "isin", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
+    )
+    df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
+    
+    with st.expander("Valuación"):
+        st.write(df_valuacion
+                 .rename(columns = {'id_bono':'ID Bono',
+                                    'isin':'ISIN',
+                                    'px_sucio':'Precio Sucio',
+                                    'cupon_dev':'Interes Devengado',
+                                    'px_limpio':'Precio Limpio',
+                                    'duracion':'Duracion',
+                                    'convexidad':'Convexidad'})
+                 .style
+                 .format("{:.6f}")
+        )
+    
+    
+    with st.expander("Flujos"):
+    
+        with st.form(key="isin_filter"):
+    
+            isin_selection = st.multiselect(
+                label="Seleccione instrumento(s) a visualizar flujos:",
+                options=df["id_bono"].unique(),
+                default=df["id_bono"][0],
             )
+            
+            submit_button = st.form_submit_button(label="Submit")
+    
+        st.write(
+            df_flujos[df_flujos["id_bono"].isin(isin_selection)]
+            .drop(columns=["plazo_next"])
+            .rename(columns = {'id_bono':'ID Bono',
+                               'isin':'ISIN',
+                               'fecha_cupon':'Fecha Cupon',
+                               'plazo':'Plazo',
+                               'dias_cupon':'Dias Cupon',
+                               'factor_descuento':'Factor Descuento',
+                               'vp_flujo':'VP Flujo'})
         )
         
-        # Since the results are in a list of lists we need to retreive each component
-        # of the output.
+    st.markdown("## Descarga Resultados")
+    
+    with st.expander("Salida"):
         
-        lista_val = [output[0] for output in results]
-        lista_flujos = [output[1] for output in results]
+        cs, c1, c2, c3, cLast = st.columns([2, 1.5, 1.5, 1.5, 2])
         
-        
-        df_valuacion = pd.DataFrame(
-            lista_val,
-            columns=["id_bono", "isin", "px_sucio", "cupon_dev", "px_limpio", "duracion", "convexidad"],
-        )
-        df_flujos = pd.concat(lista_flujos, axis=0, ignore_index=True)
-        
-        with st.expander("Valuación"):
-            st.write(df_valuacion
-                     .rename(columns = {'id_bono':'ID Bono',
-                                        'isin':'ISIN',
-                                        'px_sucio':'Precio Sucio',
-                                        'cupon_dev':'Interes Devengado',
-                                        'px_limpio':'Precio Limpio',
-                                        'duracion':'Duracion',
-                                        'convexidad':'Convexidad'})
-                     .style
-                     .format("{:.6f}")
-            )
-        
-        
-        with st.expander("Flujos"):
-        
-            with st.form(key="isin_filter"):
-        
-                isin_selection = st.multiselect(
-                    label="Seleccione instrumento(s) a visualizar flujos:",
-                    options=df["id_bono"].unique(),
-                    default=df["id_bono"][0],
-                )
-                
-                submit_button = st.form_submit_button(label="Submit")
-        
-            st.write(
-                df_flujos[df_flujos["id_bono"].isin(isin_selection)]
-                .drop(columns=["plazo_next"])
-                .rename(columns = {'id_bono':'ID Bono',
-                                   'isin':'ISIN',
-                                   'fecha_cupon':'Fecha Cupon',
-                                   'plazo':'Plazo',
-                                   'dias_cupon':'Dias Cupon',
-                                   'factor_descuento':'Factor Descuento',
-                                   'vp_flujo':'VP Flujo'})
-            )
+        with c1:
             
-        st.markdown("## Descarga Resultados")
-        
-        with st.expander("Salida"):
+            st.download_button(label = "Valuación", 
+                               data = convert_df_to_csv(df_valuacion),
+                               file_name = "df_valuacion.csv"
+                               )
             
-            cs, c1, c2, c3, cLast = st.columns([2, 1.5, 1.5, 1.5, 2])
+        with c3:
             
-            with c1:
+            st.download_button(label = "Flujos", 
+                               data = convert_df_to_csv(df_flujos),
+                               file_name = "df_flujos.csv"
+                               )
                 
-                st.download_button(label = "Valuación", 
-                                   data = convert_df_to_csv(df_valuacion),
-                                   file_name = "df_valuacion.csv"
-                                   )
-                
-            with c3:
-                
-                st.download_button(label = "Flujos", 
-                                   data = convert_df_to_csv(df_flujos),
-                                   file_name = "df_flujos.csv"
-                                   )
-                
-    except:
-        
-        st.error("Se configuró de forma erronea el Layout. Por favor revise los inputs nuevamente.")
