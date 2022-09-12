@@ -133,7 +133,16 @@ if df_cartera_in:
     
     df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
     
-    st.write(df_valuacion)
+    st.write(df_valuacion
+             .rename(columns = {'id_bono':'ID Bono',
+                                'isin':'ISIN',
+                                'px_sucio':'Precio Sucio',
+                                'cupon_dev':'Interes Devengado',
+                                'px_limpio':'Precio Limpio',
+                                'duracion':'Duracion',
+                                'convexidad':'Convexidad'})
+                           .style
+                           .format("{:.6f}"))
     
     # with st.expander("Valuación"):
     #     st.write(df_valuacion
@@ -166,7 +175,7 @@ if df_cartera_in:
     #         .drop(columns=["plazo_next"])
     #         .rename(columns = {'id_bono':'ID Bono',
     #                            'isin':'ISIN',
-    #                            'fecha_cupon':'Fecha Cupon',
+    #                            'fecha_cupon':'Fecha Cupon',|
     #                            'plazo':'Plazo',
     #                            'dias_cupon':'Dias Cupon',
     #                            'factor_descuento':'Factor Descuento',
