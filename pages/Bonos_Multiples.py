@@ -133,71 +133,60 @@ if df_cartera_in:
     
     df_flujos = pd.concat(lista_flujos, axis = 0, ignore_index = True)
     
-    st.write(df_valuacion
-             .rename(columns = {'id_bono':'ID Bono',
+    
+    with st.expander("Valuación"):
+        st.write(df_valuacion
+                  .rename(columns = {'id_bono':'ID Bono',
+                                    'isin':'ISIN',
+                                    'px_sucio':'Precio Sucio',
+                                    'cupon_dev':'Interes Devengado',
+                                    'px_limpio':'Precio Limpio',
+                                    'duracion':'Duracion',
+                                    'convexidad':'Convexidad'})
+        )
+    
+    
+    with st.expander("Flujos"):
+    
+        with st.form(key="isin_filter"):
+    
+            isin_selection = st.multiselect(
+                label="Seleccione instrumento(s) a visualizar flujos:",
+                options=df["id_bono"].unique(),
+                default=df["id_bono"][0],
+            )
+            
+            submit_button = st.form_submit_button(label="Submit")
+    
+        st.write(
+            df_flujos[df_flujos["id_bono"].isin(isin_selection)]
+            .drop(columns=["plazo_next"])
+            .rename(columns = {'id_bono':'ID Bono',
                                 'isin':'ISIN',
-                                'px_sucio':'Precio Sucio',
-                                'cupon_dev':'Interes Devengado',
-                                'px_limpio':'Precio Limpio',
-                                'duracion':'Duracion',
-                                'convexidad':'Convexidad'})
-             )
-    
-    # with st.expander("Valuación"):
-    #     st.write(df_valuacion
-    #              .rename(columns = {'id_bono':'ID Bono',
-    #                                 'isin':'ISIN',
-    #                                 'px_sucio':'Precio Sucio',
-    #                                 'cupon_dev':'Interes Devengado',
-    #                                 'px_limpio':'Precio Limpio',
-    #                                 'duracion':'Duracion',
-    #                                 'convexidad':'Convexidad'})
-    #              .style
-    #              .format("{:.6f}")
-    #     )
-    
-    
-    # with st.expander("Flujos"):
-    
-    #     with st.form(key="isin_filter"):
-    
-    #         isin_selection = st.multiselect(
-    #             label="Seleccione instrumento(s) a visualizar flujos:",
-    #             options=df["id_bono"].unique(),
-    #             default=df["id_bono"][0],
-    #         )
-            
-    #         submit_button = st.form_submit_button(label="Submit")
-    
-    #     st.write(
-    #         df_flujos[df_flujos["id_bono"].isin(isin_selection)]
-    #         .drop(columns=["plazo_next"])
-    #         .rename(columns = {'id_bono':'ID Bono',
-    #                            'isin':'ISIN',
-    #                            'fecha_cupon':'Fecha Cupon',|
-    #                            'plazo':'Plazo',
-    #                            'dias_cupon':'Dias Cupon',
-    #                            'factor_descuento':'Factor Descuento',
-    #                            'vp_flujo':'VP Flujo'})
-    #     )
+                                'fecha_cupon':'Fecha Cupon',
+                                'plazo':'Plazo',
+                                'dias_cupon':'Dias Cupon',
+                                'factor_descuento':'Factor Descuento',
+                                'vp_flujo':'VP Flujo'})
+        )
         
-    # st.markdown("## Descarga Resultados")
+    st.markdown("## Descarga Resultados")
     
-    # with st.expander("Salida"):
+    with st.expander("Salida"):
         
-    #     cs, c1, c2, c3, cLast = st.columns([2, 1.5, 1.5, 1.5, 2])
+        cs, c1, c2, c3, cLast = st.columns([2, 1.5, 1.5, 1.5, 2])
         
-    #     with c1:
+        with c1:
             
-    #         st.download_button(label = "Valuación", 
-    #                            data = convert_df_to_csv(df_valuacion),
-    #                            file_name = "df_valuacion.csv"
-    #                            )
+            st.download_button(label = "Valuación", 
+                                data = convert_df_to_csv(df_valuacion),
+                                file_name = "df_valuacion.csv"
+                                )
             
-    #     with c3:
+        with c3:
             
-    #         st.download_button(label = "Flujos", 
-    #                            data = convert_df_to_csv(df_flujos),
-    #                            file_name = "df_flujos.csv"
-    #                            )
+            st.download_button(label = "Flujos", 
+                                data = convert_df_to_csv(df_flujos),
+                                file_name = "df_flujos.csv"
+                                )
                 
