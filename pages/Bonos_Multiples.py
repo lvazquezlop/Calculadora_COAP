@@ -141,8 +141,7 @@ if df_cartera_in:
                                 'px_limpio':'Precio Limpio',
                                 'duracion':'Duracion',
                                 'convexidad':'Convexidad'})
-                           .style
-                           .format("{:.6f}"))
+             )
     
     # with st.expander("Valuación"):
     #     st.write(df_valuacion
