@@ -11,6 +11,9 @@ import calendar
 # Sección donde se cargan los calendarios necesarios en el proceso de generación
 # de fechas cupón
 
+
+
+
 mx_cal = Calendar.load(name = 'mx_calendar', filename = 'Data/df_holidays_mx.cal')
 
 
@@ -325,6 +328,7 @@ def genera_fechas_cupon(fecha_valuacion, fecha_vencimiento, calendario, periodo_
         
     df_out_aux = pd.DataFrame(out, columns = ['fecha_cupon', 'plazo', 'dias_cupon']).sort_values(by = ['fecha_cupon'], ascending = True)
     
+    
     # Revisamos que sólo haya 1 plazo negativo.
     
     n_negativos = len(df_out_aux[df_out_aux['plazo'] < 0])
@@ -335,6 +339,38 @@ def genera_fechas_cupon(fecha_valuacion, fecha_vencimiento, calendario, periodo_
         idx_negativos = df_negativos_aux.index[-1]
         
         df_out_aux = df_out_aux[df_out_aux.index.isin(range(idx_negativos + 1))]
+        
+    # En el caso que no se hayan generado fechas negativas nos aseguramos que exista una,
+    # la cual es la fecha de pago cupón previa a la fecha de valuación.
+    
+    if n_negativos == 0:
+        
+        out_aux = []
+        
+        df_negativos_aux = df_out_aux.copy()
+        
+        idx_primer_fecha = df_negativos_aux.index.min() # Obtenemos la fecha con el plazo más pequeño
+        
+        primer_fecha = df_negativos_aux.iloc[idx_primer_fecha, 0] 
+        
+        if (dia_fijo == 'si'):
+            
+            fecha_sig = (primer_fecha - dias_cupon_aux).replace(day = fecha_vencimiento.day)
+            
+        elif (dia_fijo == 'no'):
+            
+            fecha_sig = fecha_sig - dias_cupon_aux
+            
+        else:
+            pass
+        
+        plazo = fecha_sig - fecha_valuacion
+        
+        out_aux.append([fecha_sig, plazo.days, dias_cupon_aux.days])
+        
+        df_out_aux = pd.concat([pd.DataFrame(out_aux, columns = ['fecha_cupon', 'plazo', 'dias_cupon']),
+                                df_out_aux],
+                               ignore_index = True) # Tener cuidado aquí porque se resetea el índice, afecta eso?
         
     
     # Obtenemos la fecha del cupón previo a la fecha de valuación.
@@ -422,7 +458,7 @@ def mapea_cupones_anuales(periodo_cupon):
         
         cupones_anuales = 2
         
-    elif periodo_cupon in [60]:
+    elif periodo_cupon in [60, 61]:
         
         cupones_anuales = 6
         
@@ -438,3 +474,22 @@ def mapea_cupones_anuales(periodo_cupon):
         pass
     
     return cupones_anuales
+
+
+
+# ================================
+
+
+genera_fechas_cupon(fecha_valuacion = '30/06/2022',
+                    fecha_vencimiento = '28/03/2027',
+                    calendario = 'AAAAAA',
+                    periodo_cupon = 180,
+                    convencion = '30/360',
+                    dia_fijo = 'si')
+
+
+
+
+
+
+
