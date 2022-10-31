@@ -477,19 +477,4 @@ def mapea_cupones_anuales(periodo_cupon):
 
 
 
-# ================================
-
-
-genera_fechas_cupon(fecha_valuacion = '30/06/2022',
-                    fecha_vencimiento = '28/03/2027',
-                    calendario = 'AAAAAA',
-                    periodo_cupon = 180,
-                    convencion = '30/360',
-                    dia_fijo = 'si')
-
-
-
-
-
-
 
